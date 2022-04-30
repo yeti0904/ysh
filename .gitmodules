@@ -1,0 +1,3 @@
+[submodule "luacpp"]
+	path = luacpp
+	url = https://github.com/elelel/luacpp
