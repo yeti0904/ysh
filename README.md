@@ -9,7 +9,7 @@ cmake .
 make
 ```
 <br>
-these platforms have been shown to be compatible with ysh:
+these platforms have been shown to be compatible with ysh:<br>
 - Linux
 
 ## customisation
