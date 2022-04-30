@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/utsname.h>
 #ifdef __linux__
 	#include <linux/limits.h>
 #else
@@ -23,6 +24,4 @@
 
 // C libraries
 #include <readline/readline.h>
-
-// C++ libraries
-#include "../luacpp/include/luacpp/luacpp" /* https://github.com/elelel/luacpp */
+#include <readline/history.h>

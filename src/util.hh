@@ -4,6 +4,7 @@
 namespace Util {
 	std::string Escape(std::string src);
 	std::string GetWorkingDirectory();
+	std::string GetHostName();
 	std::string StringReplaceAll(std::string src, std::string replaceWhat, std::string replaceWith);
 	std::string StringReplaceOne(std::string src, std::string replaceWhat, std::string replaceWith);
 }

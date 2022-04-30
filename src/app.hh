@@ -14,6 +14,7 @@ class App {
 		std::string input;
 		CommandMap  commands;
 		AppOptions  options;
+		std::string oldWorkingDirectory;
 
 		std::vector <std::string> commandArgv;
 		std::vector <const char*> commandArgvRaw;
@@ -26,4 +27,5 @@ class App {
 
 		// util functions
 		void RegisterCommand(std::string name, CommandFunction function, std::vector <std::string> helpItems);
+		void ExecuteScript(std::string input);
 };

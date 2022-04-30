@@ -24,6 +24,10 @@ std::string Util::Escape(std::string src) {
 						ret += getenv("USER");
 						break;
 					}
+					case 'h': {
+						ret += GetHostName();
+						break;
+					}
 					case 'w': {
 						ret += GetWorkingDirectory();
 						break;
@@ -65,6 +69,14 @@ std::string Util::GetWorkingDirectory() {
 	}
 	free(wd);
 	return ret;
+}
+
+std::string Util::GetHostName() {
+	struct utsname data;
+	if (uname(&data) == -1) {
+		perror("[ERROR] uname");
+	}
+	return data.nodename;
 }
 
 std::string Util::StringReplaceAll(std::string src, std::string replaceWhat, std::string replaceWith) {

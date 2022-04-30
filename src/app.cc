@@ -16,11 +16,11 @@ App::App(int argc, char** argv) {
 	if (!FS::Directory::Exists(std::string(getenv("HOME")) + "/.config/ysh2")) {
 		FS::Directory::Create(std::string(getenv("HOME")) + "/.config/ysh2");
 	}
-	if (!FS::File::Exists(std::string(getenv("HOME")) + "/.config/ysh2/init.lua")) {
-		FS::File::Create(std::string(getenv("HOME")) + "/.config/ysh2/init.lua");
-		FS::File::Write(std::string(getenv("HOME")) + "/.config/ysh2/init.lua",
-			"-- YSH init script\n"
-			"YSH_SetEnv(\"YSH_PROMPT\", \"$ \")\n"
+	if (!FS::File::Exists(std::string(getenv("HOME")) + "/.config/ysh2/init.ysh")) {
+		FS::File::Create(std::string(getenv("HOME")) + "/.config/ysh2/init.ysh");
+		FS::File::Write(std::string(getenv("HOME")) + "/.config/ysh2/init.ysh",
+			"set YSH_PROMPT \"\\e[32m\\u:\\e[36m\\w\\e[0m> \"\n"
+			"echo Welcome to $YSH_APP_NAME $YSH_APP_VERSION\n"
 		);
 	}
 
@@ -37,13 +37,19 @@ App::App(int argc, char** argv) {
 	}
 
 	// set variables
-	run = true;
+	run                 = true;
+	oldWorkingDirectory = Util::GetWorkingDirectory();
 
 	// set env variables
 	if (getenv("YSH_PROMPT") == nullptr) {
 		setenv("YSH_PROMPT", "$ ", 0);
 	}
+	if (getenv("YSH_ROOTPROMPT") == nullptr) {
+		setenv("YSH_ROOTPROMPT", "# ", 0);
+	}
 	setenv("SHELL", argv[0], 1);
+	setenv("YSH_APP_NAME", APP_NAME, 1);
+	setenv("YSH_APP_VERSION", APP_VERSION, 1);
 
 	// register commands
 	RegisterCommand("help", BuiltInCommands::Help, {
@@ -54,10 +60,45 @@ App::App(int argc, char** argv) {
 		"exit",
 		"  makes ysh quit"
 	});
+	RegisterCommand("set", BuiltInCommands::Set, {
+		"set [key] [value]",
+		"  sets an enviroment variable of name [key] to [value]"
+	});
+	RegisterCommand("cd", BuiltInCommands::Cd, {
+		"cd {directory}",
+		"  changes working directory to {directory}, or if {directory} is not given change working directory to current user's home folder"
+	});
+	RegisterCommand("strcmp", BuiltInCommands::Strcmp, {
+		"strcmp [string1] [string2]",
+		"  returns 0 (true) if [string1] and [string2] are the same, else return 1 (false)",
+		"  returns 255 on error"
+	});
+	RegisterCommand("if", BuiltInCommands::If, {
+		"if [command] [args] ...",
+		"  executes [command] with [args] if the enviroment variable ? is equal to 0"
+	});
+	RegisterCommand("invert", BuiltInCommands::Invert, {
+		"invert",
+		"  inverts the boolean in the enviroment variable ?",
+		"  if ? is true then set it to false",
+		"  if ? is false then set it to true"
+	});
+
+	// load and run yshrc
+	std::vector <std::string> scriptLines = FS::File::ReadIntoVector(std::string(getenv("HOME")) + "/.config/ysh2/init.ysh");
+	for (size_t i = 0; i < scriptLines.size(); ++i) {
+		ExecuteScript(scriptLines[i]);
+	}
 }
 
 void App::Update() {
-	rawInput = readline(Util::Escape(getenv("YSH_PROMPT")).c_str());
+	const char* promptRaw = getenv("YSH_PROMPT");
+	if (promptRaw == nullptr) {
+		promptRaw = "$ ";
+	}
+
+	rawInput = readline(Util::Escape(promptRaw).c_str());
+	add_history(rawInput);
 	if (rawInput == nullptr) {
 		puts("readline returned NULL");
 		while (true) {}
@@ -66,58 +107,12 @@ void App::Update() {
 	input = rawInput;
 	free(rawInput);
 
-	// lex input
-	std::vector <Lexer::Token> tokens = Lexer::Lex(input);
-	if (tokens.size() == 0) return;
-	if (options.showTokens) {
-		for (size_t i = 0; i < tokens.size(); ++i) {
-			printf("[%d] %s: %s\n", (int) i, Lexer::TokenToString(tokens[i]).c_str(), tokens[i].content.c_str());
-		}
-	}
+	// handle tokens in user input
+	input = Util::StringReplaceAll(input, "~", getenv("HOME"));
 
-	// execute it
-	commandArgv = {};
-	for (size_t i = 0; i < tokens.size(); ++i) {
-		if ((tokens[i].type == Lexer::TokenType::Argument) && (tokens[i].content[0] == '$')) {
-			char* variableContent = getenv(tokens[i].content.substr(1).c_str());
-			if (variableContent == nullptr) {
-				commandArgv.push_back(" ");
-			}
-			else {
-				commandArgv.push_back(variableContent);
-			}
-		}
-		else {
-			commandArgv.push_back(tokens[i].content.c_str());
-		}
-	}
-	commandArgvRaw = {};
-	for (size_t i = 0; i < tokens.size(); ++i) {
-		commandArgvRaw.push_back(commandArgv[i].c_str());
-	}
-	commandArgvRaw.push_back(nullptr);
-
-	if (commands[commandArgv[0]].registered) {
-		commands[commandArgv[0]].function(commandArgv, commands);
-		return;
-	}
-
-	pid_t pid = fork();
-	if (pid == 0) { // child
-		if (execvp(tokens[0].content.c_str(), (char**)commandArgvRaw.data()) == -1) {
-			perror("[ERROR] Command execution failed");
-		}
-		exit(0);
-	}
-	else if (pid == -1) { // error
-		perror("[ERROR] fork");
-	}
-	else { // parent
-		int status;
-		pid = wait(&status);
-	}
+	ExecuteScript(input);
 }
 
 App::~App() {
-
+	puts("exit");
 }
