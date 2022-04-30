@@ -10,7 +10,8 @@ make
 ```
 <br>
 these platforms have been shown to be compatible with ysh:<br>
-- Linux
+* Linux
+* MacOS
 
 ## customisation
 ysh creates a directory at ~/.config called ysh2, inside is a file called init.ysh, this file allows you to set the prompt, you can set the prompt like this:
