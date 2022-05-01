@@ -4,8 +4,16 @@
 
 uint8_t BuiltInCommands::Help(std::vector <std::string> argv, CommandMap commands) {
 	if (argv.size() == 1) {
+		/* Old code
 		puts("[ERROR] Help: not enough arguments");
 		return 1;
+		*/
+		puts(
+			"Welcome to " APP_NAME "\n"
+			"Commands:\n"
+			"help, exit, set, cd, if, invert"
+		);
+		return 0;
 	}
 	if (!commands[argv[1]].registered) {
 		puts("[ERROR] Help: command doesnt exist");
@@ -60,7 +68,7 @@ uint8_t BuiltInCommands::Cd(std::vector <std::string> argv, CommandMap commands)
 	return 0;
 }
 
-uint8_t BuiltInCommands::Strcmp(std::vector <std::string> argv, CommandMap commands) {
+/*uint8_t BuiltInCommands::Strcmp(std::vector <std::string> argv, CommandMap commands) {
 	(void) commands;
 
 	if (argv.size() < 3) {
@@ -72,7 +80,7 @@ uint8_t BuiltInCommands::Strcmp(std::vector <std::string> argv, CommandMap comma
 		return RETCODE_TRUE;
 	}
 	return RETCODE_FALSE;
-}
+}*/
 
 uint8_t BuiltInCommands::If(std::vector <std::string> argv, CommandMap commands) {
 	if (argv.size() < 2) {

@@ -92,11 +92,11 @@ App::App(int argc, char** argv) {
 		"cd {directory}",
 		"  changes working directory to {directory}, or if {directory} is not given change working directory to current user's home folder"
 	});
-	RegisterCommand("strcmp", BuiltInCommands::Strcmp, {
+	/*RegisterCommand("strcmp", BuiltInCommands::Strcmp, {
 		"strcmp [string1] [string2]",
 		"  returns 0 (true) if [string1] and [string2] are the same, else return 1 (false)",
 		"  returns 255 on error"
-	});
+	});*/
 	RegisterCommand("if", BuiltInCommands::If, {
 		"if [command] [args] ...",
 		"  executes [command] with [args] if the enviroment variable ? is equal to 0"
