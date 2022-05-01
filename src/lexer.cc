@@ -10,10 +10,11 @@ std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 		switch (src[i]) {
 			case ';':  // end of arguments
 			case '"':  // string
+			case '\'': // also string
 			case '\0': // null terminator (end of string)
 			case '\n': // new line
 			case ' ': {
-				if (src[i] == '"') {
+				if ((src[i] == '"') || (src[i] == '\'')) {
 					if (!inString) {
 						inString = true;
 						break;
