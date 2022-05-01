@@ -2,7 +2,7 @@
 
 // app information
 #define APP_NAME    "Yeti's Shell"
-#define APP_VERSION "b0.1.0"
+#define APP_VERSION "b0.2.0"
 
 // important stuff idk what to put in this comment
 #define RETCODE_TRUE  0
