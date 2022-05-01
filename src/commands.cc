@@ -25,7 +25,7 @@ uint8_t BuiltInCommands::Exit(std::vector <std::string> argv, CommandMap command
 
 	// get exit code given by user if there is one
 	if (argv.size() > 1) {
-		exitCode == std::stoi(argv[1]);
+		exitCode = std::stoi(argv[1]);
 	}
 
 	exit(exitCode);
