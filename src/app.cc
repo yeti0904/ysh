@@ -25,23 +25,37 @@ App::App(int argc, char** argv) {
 	}
 
 	// loop through arguments
+	bool        runScript = false;
+	std::string scriptPath;
 	for (int i = 1; i < argc; ++i) {
 		std::string currentArg = argv[i];
-		if ((currentArg == "-h") || (currentArg == "--help")) {
-			printf(
-				"Help menu for %s\n"
-				"  -v / --version : show app name and app version\n"
-				"  -t / --tokens  : display lexer output after command inputs\n"
-			, APP_NAME);
-			exit(0);
+		if (currentArg[0] == '-') {
+			if ((currentArg == "-h") || (currentArg == "--help")) {
+				printf(
+					"Help menu for %s\n"
+					"  -v / --version : show app name and app version\n"
+					"  -t / --tokens  : display lexer output after command inputs\n"
+				, APP_NAME);
+				exit(0);
+			}
+			if ((currentArg == "-v") || (currentArg == "--version")) {
+				printf("%s %s\n", APP_NAME, APP_VERSION);
+				exit(0);
+			}
+			if ((currentArg == "-t") || (currentArg == "--tokens")) {
+				options.showTokens = true;
+			}
 		}
-		if ((currentArg == "-v") || (currentArg == "--version")) {
-			printf("%s %s\n", APP_NAME, APP_VERSION);
-			exit(0);
+		else {
+			// looks like the user wants us to run a script
+			runScript  = true;
+			scriptPath = currentArg;
 		}
-		if ((currentArg == "-t") || (currentArg == "--tokens")) {
-			options.showTokens = true;
-		}
+	}
+
+	if (runScript) {
+		ExecuteScript(FS::File::Read(scriptPath));
+		exit(0);
 	}
 
 	// set variables
@@ -65,8 +79,10 @@ App::App(int argc, char** argv) {
 		"  shows you how to use a command"
 	});
 	RegisterCommand("exit", BuiltInCommands::Exit, {
-		"exit",
+		"exit {status}",
 		"  makes ysh quit"
+		"  if {status} is given, exit with exit code {status}"
+		"  {status} must be a number"
 	});
 	RegisterCommand("set", BuiltInCommands::Set, {
 		"set [key] [value]",

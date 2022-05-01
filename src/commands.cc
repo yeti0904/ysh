@@ -20,8 +20,16 @@ uint8_t BuiltInCommands::Help(std::vector <std::string> argv, CommandMap command
 uint8_t BuiltInCommands::Exit(std::vector <std::string> argv, CommandMap commands) {
 	(void) argv;
 	(void) commands;
-	exit(0);
-	return 0;
+
+	uint8_t exitCode = 0;
+
+	// get exit code given by user if there is one
+	if (argv.size() > 1) {
+		exitCode == std::stoi(argv[1]);
+	}
+
+	exit(exitCode);
+	return exitCode;
 }
 
 uint8_t BuiltInCommands::Set(std::vector <std::string> args, CommandMap commands) {
