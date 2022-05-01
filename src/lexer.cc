@@ -8,6 +8,7 @@ std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 
 	for (size_t i = 0; i <= src.length(); ++i) {
 		switch (src[i]) {
+			case ';':  // end of arguments
 			case '"':  // string
 			case '\0': // null terminator (end of string)
 			case '\n': // new line
@@ -19,14 +20,14 @@ std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 					}
 					inString = false;
 				}
-				if (inString && (src[i] == ' ')) {
+				if (inString) {
 					reading += src[i];
 					break;
 				}
 				if (reading == "") {
 					break;
 				}
-				if (command && (src[i] != '\n')) {
+				if (command) {
 					// found argument
 					ret.push_back({
 						Lexer::TokenType::Argument,
@@ -42,6 +43,16 @@ std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 					command = true; // found the command, set this to true because now the arguments are coming
 				}
 				reading = "";
+
+				if ((src[i] == '\n') || (src[i] == ';') || (src[i] == '\0')) {
+					// end of arguments
+					ret.push_back({
+						Lexer::TokenType::EndOfArguments,
+						""
+					});
+					command = false; // next command coming up (maybe)
+				}
+
 				break;
 			}
 			default: {
@@ -61,6 +72,9 @@ std::string Lexer::TokenToString(Lexer::Token token) {
 		}
 		case Lexer::TokenType::Argument: {
 			return "Argument";
+		}
+		case Lexer::TokenType::EndOfArguments: {
+			return "EndOfArguments";
 		}
 	}
 	return "";

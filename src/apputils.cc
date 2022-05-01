@@ -19,9 +19,36 @@ void App::ExecuteScript(std::string input) {
 		}
 	}
 
-	// execute it
-	commandArgv = {};
+	// split these tokens into commands
+	std::vector <std::vector <Lexer::Token>> commands;
 	for (size_t i = 0; i < tokens.size(); ++i) {
+		if (tokens[i].type == Lexer::TokenType::Command) {
+			std::vector <Lexer::Token> command;
+			size_t j = i;
+			for (; (j < tokens.size()) && (tokens[j].type != Lexer::TokenType::EndOfArguments); ++j) {
+				switch (tokens[j].type) {
+					case Lexer::TokenType::Command:
+					case Lexer::TokenType::Argument: {
+						command.push_back(tokens[j]);
+						break;
+					}
+					default: break;
+				}
+			}
+			i = j;
+			commands.push_back(command);
+		}
+	}
+
+	// execute all commands
+	for (size_t i = 0; i < commands.size(); ++i) {
+		ExecuteTokens(commands[i]);
+	}
+}
+
+void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
+	commandArgv = {};
+	for (size_t i = 0; (i < tokens.size()) && (tokens[i].type != Lexer::TokenType::EndOfArguments); ++i) {
 		if ((tokens[i].type == Lexer::TokenType::Argument) && (tokens[i].content[0] == '$')) {
 			char* variableContent = getenv(tokens[i].content.substr(1).c_str());
 			if (variableContent == nullptr) {
@@ -58,11 +85,24 @@ void App::ExecuteScript(std::string input) {
 		exit(0);
 	}
 	else if (pid == -1) { // error
-		perror("[ERROR] fork");
+		perror("[ERROR] fork failed");
 		exit(1);
 	}
 	else { // parent
 		int status;
 		pid = wait(&status);
+
+		// get return value
+		if (WIFEXITED(status)) {
+			uint8_t retValue = WEXITSTATUS(status);
+			if (setenv("?", std::to_string(retValue).c_str(), 1) == -1) {
+				perror("[ERROR] setenv failed");
+			}
+		}
+		else {
+			if (setenv("?", "255", 1) == -1) {
+				perror("[ERROR] setenv failed");
+			}
+		}
 	}
 }

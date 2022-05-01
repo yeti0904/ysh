@@ -27,6 +27,14 @@ App::App(int argc, char** argv) {
 	// loop through arguments
 	for (int i = 1; i < argc; ++i) {
 		std::string currentArg = argv[i];
+		if ((currentArg == "-h") || (currentArg == "--help")) {
+			printf(
+				"Help menu for %s\n"
+				"  -v / --version : show app name and app version\n"
+				"  -t / --tokens  : display lexer output after command inputs\n"
+			, APP_NAME);
+			exit(0);
+		}
 		if ((currentArg == "-v") || (currentArg == "--version")) {
 			printf("%s %s\n", APP_NAME, APP_VERSION);
 			exit(0);

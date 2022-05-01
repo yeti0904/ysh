@@ -1,6 +1,7 @@
 #pragma once
 #include "_components.hh"
 #include "commands.hh"
+#include "lexer.hh"
 
 struct AppOptions {
 	bool showTokens;
@@ -28,4 +29,5 @@ class App {
 		// util functions
 		void RegisterCommand(std::string name, CommandFunction function, std::vector <std::string> helpItems);
 		void ExecuteScript(std::string input);
+		void ExecuteTokens(std::vector <Lexer::Token> tokens);
 };
