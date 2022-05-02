@@ -4,6 +4,7 @@
 #include "constants.hh"
 #include "commands.hh"
 #include "fs.hh"
+#include "autocompletion.hh"
 
 App::App(int argc, char** argv) {
 	// set default options
@@ -23,6 +24,14 @@ App::App(int argc, char** argv) {
 			"echo Welcome to $YSH_APP_NAME $YSH_APP_VERSION\n"
 		);
 	}
+
+	// load PATH
+	GetExecutables();
+
+	// use this array of executables for command autocompletion
+	//AutoCompletion::Init(executables);
+	//rl_attempted_completion_function = AutoCompletion::Completion;
+	// this is broken and freezes ysh
 
 	// loop through arguments
 	bool        runScript = false;
@@ -97,15 +106,19 @@ App::App(int argc, char** argv) {
 		"  returns 0 (true) if [string1] and [string2] are the same, else return 1 (false)",
 		"  returns 255 on error"
 	});*/
-	RegisterCommand("if", BuiltInCommands::If, {
+	/*RegisterCommand("if", BuiltInCommands::If, {
 		"if [command] [args] ...",
 		"  executes [command] with [args] if the enviroment variable ? is equal to 0"
-	});
+	});*/
 	RegisterCommand("invert", BuiltInCommands::Invert, {
 		"invert",
 		"  inverts the boolean in the enviroment variable ?",
 		"  if ? is true then set it to false",
 		"  if ? is false then set it to true"
+	});
+	RegisterCommand("listexecutables", BuiltInCommands::ListExecutables, {
+		"listexecutables",
+		"  gives you a newline seperated list of all executables from directories in PATH"
 	});
 
 	// load and run yshrc
@@ -124,7 +137,7 @@ void App::Update() {
 	rawInput = readline(Util::Escape(promptRaw).c_str());
 	add_history(rawInput);
 	if (rawInput == nullptr) {
-		puts("readline returned NULL");
+		fputs("readline returned NULL", stderr);
 		while (true) {}
 	}
 
@@ -138,5 +151,5 @@ void App::Update() {
 }
 
 App::~App() {
-	puts("exit");
+	//puts("exit");
 }

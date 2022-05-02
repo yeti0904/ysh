@@ -1,22 +1,21 @@
 #include "commands.hh"
 #include "fs.hh"
 #include "constants.hh"
+#include "app.hh"
 
-uint8_t BuiltInCommands::Help(std::vector <std::string> argv, CommandMap commands) {
+uint8_t BuiltInCommands::Help(std::vector <std::string> argv, CommandMap commands, App) {
 	if (argv.size() == 1) {
-		/* Old code
-		puts("[ERROR] Help: not enough arguments");
-		return 1;
-		*/
-		puts(
-			"Welcome to " APP_NAME "\n"
-			"Commands:\n"
-			"help, exit, set, cd, if, invert"
-		);
+		/*puts("[ERROR] Help: not enough arguments");
+		return 1;*/
+		printf("Welcome to %s\nCommands: ", APP_NAME);
+		for (const auto& [key, val] : commands) {
+			printf("%s, ", key.c_str());
+		}
+		puts("\b\b  \b\b"); // this looks ugly i know
 		return 0;
 	}
 	if (!commands[argv[1]].registered) {
-		puts("[ERROR] Help: command doesnt exist");
+		fputs("[ERROR] Help: command doesnt exist\n", stderr);
 		return 1;
 	}
 	for (size_t i = 0; i < commands[argv[1]].helpItems.size(); ++i) {
@@ -25,9 +24,7 @@ uint8_t BuiltInCommands::Help(std::vector <std::string> argv, CommandMap command
 	return 0;
 }
 
-uint8_t BuiltInCommands::Exit(std::vector <std::string> argv, CommandMap commands) {
-	(void) argv;
-	(void) commands;
+uint8_t BuiltInCommands::Exit(std::vector <std::string> argv, CommandMap, App) {
 
 	uint8_t exitCode = 0;
 
@@ -40,18 +37,20 @@ uint8_t BuiltInCommands::Exit(std::vector <std::string> argv, CommandMap command
 	return exitCode;
 }
 
-uint8_t BuiltInCommands::Set(std::vector <std::string> args, CommandMap commands) {
+uint8_t BuiltInCommands::Set(std::vector <std::string> args, CommandMap commands, App app) {
 	(void) commands;
+	(void) app;
 	if (args.size() < 3) {
-		puts("[ERROR] Set: not enough arguments");
+		fputs("[ERROR] Set: not enough arguments\n", stderr);
 		return 1;
 	}
 	setenv(args[1].c_str(), args[2].c_str(), 1);
 	return 0;
 }
 
-uint8_t BuiltInCommands::Cd(std::vector <std::string> argv, CommandMap commands) {
+uint8_t BuiltInCommands::Cd(std::vector <std::string> argv, CommandMap commands, App app) {
 	(void) commands;
+	(void) app;
 
 	if (argv.size() < 2) {
 		chdir(getenv("HOME"));
@@ -62,7 +61,7 @@ uint8_t BuiltInCommands::Cd(std::vector <std::string> argv, CommandMap commands)
 		chdir(argv[1].c_str());
 	}
 	else {
-		puts("[ERROR] Cd: Directory doesn't exist");
+		fputs("[ERROR] Cd: Directory doesn't exist\n", stderr);
 		return 1;
 	}
 	return 0;
@@ -82,14 +81,14 @@ uint8_t BuiltInCommands::Cd(std::vector <std::string> argv, CommandMap commands)
 	return RETCODE_FALSE;
 }*/
 
-uint8_t BuiltInCommands::If(std::vector <std::string> argv, CommandMap commands) {
+uint8_t BuiltInCommands::If(std::vector <std::string> argv, CommandMap commands, App app) {
 	if (argv.size() < 2) {
-		puts("[ERROR] If: not enough arguments");
+		fputs("[ERROR] If: not enough arguments\n", stderr);
 	}
 
 	char* commandRetValue = getenv("?");
 	if (commandRetValue == nullptr) {
-		printf("[ERROR] If: failed to get return value");
+		fputs("[ERROR] If: failed to get return value\n", stderr);
 		return 1;
 	}
 	uint8_t commandRetBool = atoi(commandRetValue);
@@ -107,7 +106,7 @@ uint8_t BuiltInCommands::If(std::vector <std::string> argv, CommandMap commands)
 	commandArgvRaw.push_back(nullptr);
 
 	if (commands[commandArgv[0]].registered) {
-		uint8_t ret = commands[commandArgv[0]].function(commandArgv, commands);
+		uint8_t ret = commands[commandArgv[0]].function(commandArgv, commands, app);
 		if (setenv("?", std::to_string(ret).c_str(), 1) == -1) {
 			perror("[ERROR] setenv failed");
 			return 1;
@@ -134,13 +133,14 @@ uint8_t BuiltInCommands::If(std::vector <std::string> argv, CommandMap commands)
 	return 0;
 }
 
-uint8_t BuiltInCommands::Invert(std::vector <std::string> argv, CommandMap commands) {
+uint8_t BuiltInCommands::Invert(std::vector <std::string> argv, CommandMap commands, App app) {
 	(void) argv;
 	(void) commands;
+	(void) app;
 	
 	char* commandRetValue = getenv("?");
 	if (commandRetValue == nullptr) {
-		printf("[ERROR] Else: failed to get return value");
+		fputs("[ERROR] Else: failed to get return value\n", stderr);
 		return 1;
 	}
 	uint8_t commandRetBool = atoi(commandRetValue);
@@ -149,4 +149,13 @@ uint8_t BuiltInCommands::Invert(std::vector <std::string> argv, CommandMap comma
 		return RETCODE_FALSE;
 	}
 	return RETCODE_TRUE;
+}
+
+uint8_t BuiltInCommands::ListExecutables(std::vector <std::string> argv, CommandMap commands, App app) {
+	(void) argv;
+	(void) commands;
+	for (size_t i = 0; i < app.executables.size(); ++i) {
+		puts(app.executables[i].c_str());
+	}
+	return 0;
 }

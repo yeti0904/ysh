@@ -69,7 +69,7 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 	commandArgvRaw.push_back(nullptr);
 
 	if (commands[commandArgv[0]].registered) {
-		uint8_t ret = commands[commandArgv[0]].function(commandArgv, commands);
+		uint8_t ret = commands[commandArgv[0]].function(commandArgv, commands, *this);
 		if (setenv("?", std::to_string(ret).c_str(), 1) == -1) {
 			perror("[ERROR] setenv failed");
 			exit(1);

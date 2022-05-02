@@ -17,6 +17,9 @@ class App {
 		AppOptions  options;
 		std::string oldWorkingDirectory;
 
+		std::vector <std::string> executables;
+		std::vector <std::string> pathDirectories;
+
 		std::vector <std::string> commandArgv;
 		std::vector <const char*> commandArgvRaw;
 
@@ -24,6 +27,7 @@ class App {
 		App(int argc, char** argv);
 		void Update();
 		void Shell();
+		void GetExecutables();
 		~App();
 
 		// util functions

@@ -9,5 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic")
 
+# -Og -ggdb3 -fsanitize=address,undefined
+
 add_executable(ysh ${ysh_SRC})
 target_link_libraries(ysh readline)
