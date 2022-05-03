@@ -7,4 +7,5 @@ namespace Util {
 	std::string GetHostName();
 	std::string StringReplaceAll(std::string src, std::string replaceWhat, std::string replaceWith);
 	std::string StringReplaceOne(std::string src, std::string replaceWhat, std::string replaceWith);
+	bool        StringIsNumerical(std::string str);
 }

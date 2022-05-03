@@ -8,7 +8,8 @@
 
 App::App(int argc, char** argv) {
 	// set default options
-	options.showTokens = false;
+	options.showTokens  = false;
+	options.dontExecute = false;
 
 	// create directories and files
 	if (!FS::Directory::Exists(std::string(getenv("HOME")) + "/.config")) {
@@ -29,8 +30,8 @@ App::App(int argc, char** argv) {
 	GetExecutables();
 
 	// use this array of executables for command autocompletion
-	//AutoCompletion::Init(executables);
-	//rl_attempted_completion_function = AutoCompletion::Completion;
+	AutoCompletion::Init(executables);
+	rl_attempted_completion_function = AutoCompletion::Completion;
 	// this is broken and freezes ysh
 
 	// loop through arguments
@@ -53,6 +54,9 @@ App::App(int argc, char** argv) {
 			}
 			if ((currentArg == "-t") || (currentArg == "--tokens")) {
 				options.showTokens = true;
+			}
+			if ((currentArg == "-d") || (currentArg == "--dont-execute")) {
+				options.dontExecute = true;
 			}
 		}
 		else {

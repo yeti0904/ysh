@@ -1,4 +1,5 @@
 #include "lexer.hh"
+#include "util.hh"
 
 std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 	std::vector <Lexer::Token> ret;
@@ -56,6 +57,24 @@ std::vector <Lexer::Token> Lexer::Lex(std::string src) {
 
 				break;
 			}
+			case '>': { // redirecting output
+				if (inString) {
+					reading += src[i];
+					break;
+				}
+				if (reading.length() != 0) {
+					if (!Util::StringIsNumerical(reading)) {
+						printf("[ERROR] '%s' is not an integer\n", reading.c_str());
+						exit(1);
+					}
+				}
+				ret.push_back({
+					Lexer::TokenType::RedirectOutput,
+					reading
+				});
+				reading = "";
+				break;
+			}
 			default: {
 				reading += src[i];
 				break;
@@ -76,6 +95,9 @@ std::string Lexer::TokenToString(Lexer::Token token) {
 		}
 		case Lexer::TokenType::EndOfArguments: {
 			return "EndOfArguments";
+		}
+		case Lexer::TokenType::RedirectOutput: {
+			return "RedirectOutput";
 		}
 	}
 	return "";

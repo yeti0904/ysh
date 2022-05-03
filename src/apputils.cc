@@ -40,6 +40,10 @@ void App::ExecuteScript(std::string input) {
 		}
 	}
 
+	if (options.dontExecute) {
+		return;
+	}
+
 	// execute all commands
 	for (size_t i = 0; i < commands.size(); ++i) {
 		ExecuteTokens(commands[i]);
@@ -48,7 +52,13 @@ void App::ExecuteScript(std::string input) {
 
 void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 	commandArgv = {};
-	for (size_t i = 0; (i < tokens.size()) && (tokens[i].type != Lexer::TokenType::EndOfArguments); ++i) {
+	size_t i = 0;
+	for (; 
+		(i < tokens.size()) &&
+		(tokens[i].type != Lexer::TokenType::EndOfArguments) &&
+		(tokens[i].type != Lexer::TokenType::RedirectOutput); ++i
+	){
+		puts(Lexer::TokenToString(tokens[i]).c_str());
 		if ((tokens[i].type == Lexer::TokenType::Argument) && (tokens[i].content[0] == '$')) {
 			char* variableContent = getenv(tokens[i].content.substr(1).c_str());
 			if (variableContent == nullptr) {
@@ -79,9 +89,59 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 
 	pid_t pid = fork();
 	if (pid == 0) { // child
+		int redirectToFD; // file descriptor of redirectTo
+		if (tokens[i].type == Lexer::TokenType::RedirectOutput) {
+			// we are redirecting the output to some file descripter
+			bool        redirectAll = true;
+			int         redirectFrom;
+			std::string redirectTo;
+			if (tokens[i].content.length() != 0) {
+				// the user has given us a file descriptor to redirect output from
+				redirectAll  = false;
+				redirectFrom = std::stoi(tokens[i].content); // the lexer has already checked if the token's content is an integer
+			}
+
+			// get where we need to redirect output to
+			if ((i == tokens.size() - 1) || (tokens[i + 1].type != Lexer::TokenType::Argument)) {
+				// the user didnt tell the shell where to output to
+				fputs("[ERROR] location for redirecting output to not given\n", stderr);
+				exit(1);
+			}
+			redirectTo = tokens[i + 1].content;
+			redirectToFD = open(redirectTo.c_str(), 0);
+			if (redirectToFD < 0) {
+				perror("[ERROR] open failed");
+				exit(1);
+			}
+
+			// set file descriptors
+			if (redirectAll) {
+				for (size_t i = 0; i <= 2; ++i) {
+					if (dup2(i, redirectToFD) == -1) {
+						perror("[ERROR] dup2 failed");
+						exit(1);
+					}
+				}
+			}
+			else {
+				if (dup2(redirectFrom, redirectToFD) == -1) {
+					perror("[ERROR] dup2 failed");
+					exit(1);
+				}
+			}
+		}
+
 		if (execvp(tokens[0].content.c_str(), (char**)commandArgvRaw.data()) == -1) {
 			perror("[ERROR] Command execution failed");
 		}
+
+		if (tokens[i].type == Lexer::TokenType::RedirectOutput) {
+			if (close(redirectToFD) == -1) {
+				perror("[ERROR] close failed");
+				exit(1);
+			}
+		}
+
 		exit(0);
 	}
 	else if (pid == -1) { // error

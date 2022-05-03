@@ -94,3 +94,12 @@ std::string Util::StringReplaceOne(std::string src, std::string replaceWhat, std
 	}
 	return ret;
 }
+
+bool Util::StringIsNumerical(std::string str) {
+	for (size_t i = 0; i < str.length(); ++i) {
+		if ((str[i] < '0') || (str[i] > '9')) {
+			return false;
+		}
+	}
+	return true;
+}

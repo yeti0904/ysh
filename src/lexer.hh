@@ -5,7 +5,8 @@ namespace Lexer {
 	enum class TokenType {
 		Command = 0,
 		Argument,
-		EndOfArguments
+		EndOfArguments,
+		RedirectOutput
 	};
 	struct Token {
 		TokenType type;

@@ -5,6 +5,7 @@
 
 struct AppOptions {
 	bool showTokens;
+	bool dontExecute;
 };
 
 class App {

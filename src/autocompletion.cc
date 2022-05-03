@@ -64,15 +64,21 @@ char** AutoCompletion::Completion(const char* text, int, int) {
 	return rl_completion_matches(text, AutoCompletion::Generator);
 }
 
-char* AutoCompletion::Generator(const char* text, int) {
+char* AutoCompletion::Generator(const char* text, int state) {
 	//printf("size: %i\n", (int) globalExecutables.size());
 	size_t length = strlen(text);
 
 	for (size_t i = 0; i < globalExecutables.size(); ++i) {
 		if (std::string(text) == globalExecutables[i].substr(0, length)) {
+			-- state;
+			if (state > 0) {
+				continue;
+			}
+			//printf("returning %s\n", globalExecutables[i].c_str());
 			return strdup(globalExecutables[i].c_str());
 		}
 	}
 
+	//puts("returning nothing");
 	return NULL; // found nothing
 }
