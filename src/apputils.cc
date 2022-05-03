@@ -1,5 +1,6 @@
 #include "app.hh"
 #include "lexer.hh"
+#include "fs.hh"
 
 void App::RegisterCommand(std::string name, CommandFunction function, std::vector <std::string> helpItems) {
 	Command command;
@@ -28,6 +29,7 @@ void App::ExecuteScript(std::string input) {
 			for (; (j < tokens.size()) && (tokens[j].type != Lexer::TokenType::EndOfArguments); ++j) {
 				switch (tokens[j].type) {
 					case Lexer::TokenType::Command:
+					case Lexer::TokenType::RedirectOutput:
 					case Lexer::TokenType::Argument: {
 						command.push_back(tokens[j]);
 						break;
@@ -58,7 +60,7 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 		(tokens[i].type != Lexer::TokenType::EndOfArguments) &&
 		(tokens[i].type != Lexer::TokenType::RedirectOutput); ++i
 	){
-		//puts(Lexer::TokenToString(tokens[i]).c_str());
+		//printf("Loop: token %d is %s\n", (int) i, Lexer::TokenToString(tokens[i]).c_str());
 		if ((tokens[i].type == Lexer::TokenType::Argument) && (tokens[i].content[0] == '$')) {
 			char* variableContent = getenv(tokens[i].content.substr(1).c_str());
 			if (variableContent == nullptr) {
@@ -108,6 +110,13 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 				exit(1);
 			}
 			redirectTo = tokens[i + 1].content;
+
+			// create file if it doesnt exist
+			if (!FS::File::Exists(redirectTo)) {
+				FS::File::Create(redirectTo);
+			}
+
+			// get file descriptor
 			redirectToFD = open(redirectTo.c_str(), 0);
 			if (redirectToFD < 0) {
 				perror("[ERROR] open failed");
