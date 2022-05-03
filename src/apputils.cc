@@ -58,7 +58,7 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 		(tokens[i].type != Lexer::TokenType::EndOfArguments) &&
 		(tokens[i].type != Lexer::TokenType::RedirectOutput); ++i
 	){
-		puts(Lexer::TokenToString(tokens[i]).c_str());
+		//puts(Lexer::TokenToString(tokens[i]).c_str());
 		if ((tokens[i].type == Lexer::TokenType::Argument) && (tokens[i].content[0] == '$')) {
 			char* variableContent = getenv(tokens[i].content.substr(1).c_str());
 			if (variableContent == nullptr) {
