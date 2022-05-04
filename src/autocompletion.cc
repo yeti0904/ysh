@@ -38,9 +38,7 @@ void App::GetExecutables() {
 		DIR*           dhnd = opendir(pathDirectories[i].c_str());
 		struct dirent* dir;
 		if (dhnd == nullptr) {
-			perror("[ERROR] opendir failed");
-			puts(pathDirectories[i].c_str());
-			exit(1);
+			continue;
 		}
 		while ((dir = readdir(dhnd)) != nullptr) {
 			if (dir->d_type != DT_DIR) {
