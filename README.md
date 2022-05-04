@@ -21,7 +21,7 @@ set YSH_PROMPT "$ "
 ```
 
 ## features
-ysh isn't finish but i'm working on useful features, here is a list of them
+ysh isn't finished but i'm working on useful features, here is a list of them
 
  - autocompletion (files AND commands)
  - multiple commands on one line, here's an example: `printf "hello "; printf "world\n"`
