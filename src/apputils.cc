@@ -126,17 +126,21 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 			// set file descriptors
 			if (redirectAll) {
 				for (size_t i = 0; i <= 2; ++i) {
-					if (dup2(i, redirectToFD) == -1) {
+					if (dup2(redirectToFD, i) == -1) {
 						perror("[ERROR] dup2 failed");
 						exit(1);
 					}
 				}
 			}
 			else {
-				if (dup2(redirectFrom, redirectToFD) == -1) {
+				if (dup2(redirectToFD, redirectFrom) == -1) {
 					perror("[ERROR] dup2 failed");
 					exit(1);
 				}
+			}
+			if (close(redirectToFD) == -1) { // someone on disord told me to do this
+				perror("[ERROR] close failed");
+				exit(1);
 			}
 		}
 
