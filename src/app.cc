@@ -5,6 +5,7 @@
 #include "commands.hh"
 #include "fs.hh"
 #include "autocompletion.hh"
+#include "signalhandler.hh"
 
 App::App(int argc, char** argv) {
 	// set default options
@@ -65,6 +66,10 @@ App::App(int argc, char** argv) {
 			scriptPath = currentArg;
 		}
 	}
+
+	// init signal handlers
+	// these are initialised here in case a script needs to execute readline
+	SignalHandler::Init();
 
 	if (runScript) {
 		ExecuteScript(FS::File::Read(scriptPath));
