@@ -123,9 +123,14 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 				exit(1);
 			}
 
+
 			// set file descriptors
 			if (redirectAll) {
-				for (size_t i = 0; i <= 2; ++i) {
+				for (size_t i = 1; i <= 2; ++i) {
+					if (close(i) == -1) {
+						perror("[ERROR] close failed");
+						exit(1);
+					}
 					if (dup2(redirectToFD, i) == -1) {
 						perror("[ERROR] dup2 failed");
 						exit(1);
@@ -133,26 +138,24 @@ void App::ExecuteTokens(std::vector <Lexer::Token> tokens) {
 				}
 			}
 			else {
-				if (dup2(redirectToFD, redirectFrom) == -1) {
+				if (close(redirectFrom) == -1) {
+					perror("[ERROR] close failed");
+					exit(1);
+				}
+				if (dup2(redirectToFD, redirectFrom) == -1) { // creates a new file descriptor (redirectFrom) which has the same file description as redirectTo
+					// i left the above comment here because dup2 confuses me sometimes
 					perror("[ERROR] dup2 failed");
 					exit(1);
 				}
 			}
-			if (close(redirectToFD) == -1) { // someone on disord told me to do this
+			if (close(redirectToFD) == -1) {
 				perror("[ERROR] close failed");
-				exit(1);
 			}
 		}
+
 
 		if (execvp(tokens[0].content.c_str(), (char**)commandArgvRaw.data()) == -1) {
 			perror("[ERROR] Command execution failed");
-		}
-
-		if (tokens[i].type == Lexer::TokenType::RedirectOutput) {
-			if (close(redirectToFD) == -1) {
-				perror("[ERROR] close failed");
-				exit(1);
-			}
 		}
 
 		exit(0);
